@@ -12,16 +12,16 @@ import torch.nn.functional as F
 
 
 
-def test(cfg, dataset='val', show=False, save=False):
+def test(cfg, dataset='val', show=False, save=True):
 
     from pump_dataset import PumpDataset
 
     if dataset == 'train':
-        data = PumpDataset(data_dir=os.path.join(cfg['train_folder']))
+        data = PumpDataset(data_dir=cfg['train_folder'])
     elif dataset == 'val':
-        data = PumpDataset(data_dir=os.path.join(cfg['val_folder']))
+        data = PumpDataset(data_dir=cfg['val_folder'])
     elif dataset == 'test':
-        data = PumpDataset(data_dir=os.path.join(cfg['test_folder']))
+        data = PumpDataset(data_dir=cfg['test_folder'])
 
     output_dir = 'output'
     if not os.path.exists(output_dir):
@@ -44,15 +44,16 @@ def test(cfg, dataset='val', show=False, save=False):
             inputs.append(sample.numpy())
             files.append(path)
             latent.append(z[0].numpy().flatten())
-            rec = rec[0].numpy()
+            rec = rec.numpy()
             recs.append(rec)
             losses.append(loss.item())
 
-        np.save(os.path.join(output_dir,'inputs.npy'), inputs)
-        np.save(os.path.join(output_dir,'recs.npy'), recs)
-        np.save(os.path.join(output_dir,'files.npy'), files)
-        np.save(os.path.join(output_dir,'losses.npy'), losses)
-        np.save(os.path.join(output_dir,'latent.npy'), latent)
+        if save:
+            np.save(os.path.join(output_dir,'{}_inputs.npy'.format(dataset)), inputs)
+            np.save(os.path.join(output_dir,'{}_recs.npy'.format(dataset)), recs)
+            np.save(os.path.join(output_dir,'{}_files.npy'.format(dataset)), files)
+            np.save(os.path.join(output_dir,'{}_losses.npy'.format(dataset)), losses)
+            np.save(os.path.join(output_dir,'{}_latent.npy'.format(dataset)), latent)
 
 if __name__ == "__main__":
     cfg = {
@@ -71,4 +72,5 @@ if __name__ == "__main__":
            'device': 'cuda',
           }
 
-    test(cfg)
+    test(cfg,dataset='val')
+    test(cfg,dataset='train')
